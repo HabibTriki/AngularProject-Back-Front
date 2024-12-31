@@ -20,26 +20,21 @@ export class FeedService {
   }
 
   findAllPosts(): Observable<FeedPost[]> {
-    return from(this.feedPostRepository.find());
+    return from(
+      this.feedPostRepository.find({
+        relations: ['author'],
+      }),
+    );
   }
-
-  // findPosts(take: number = 10, skip: number = 0): Observable<FeedPost[]> {
-  //   return from(
-  //     this.feedPostRepository.findAndCount({ take, skip }).then(([posts]) => {
-  //       return <FeedPost[]>posts;
-  //     }),
-  //   );
-  // }
 
   findPosts(take: number = 10, skip: number = 0): Observable<FeedPost[]> {
     return from(
-      this.feedPostRepository
-        .createQueryBuilder('post')
-        .innerJoinAndSelect('post.author', 'author')
-        .orderBy('post.createdAt', 'DESC')
-        .take(take)
-        .skip(skip)
-        .getMany(),
+      this.feedPostRepository.find({
+        relations: ['author'],
+        order: { createdAt: 'DESC' },
+        take,
+        skip,
+      }),
     );
   }
 
@@ -54,7 +49,7 @@ export class FeedService {
   findPostById(id: number): Observable<FeedPost> {
     return from(
       this.feedPostRepository.findOne({
-        where: { id }, // Adding the where clause
+        where: { id },
         relations: ['author'],
       }),
     );

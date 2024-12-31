@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -11,7 +12,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { DeleteResult, UpdateResult } from 'typeorm';
 
 import { JwtGuard } from '../../auth/guards/jwt.guard';
@@ -20,13 +21,12 @@ import { FeedPost } from '../models/post.interface';
 import { FeedService } from '../services/feed.service';
 
 import { IsCreatorGuard } from '../guards/is-creator.guard';
+import { catchError } from 'rxjs/operators';
 
 @Controller('feed')
 export class FeedController {
   constructor(private feedService: FeedService) {}
 
-  // @Roles(Role.ADMIN, Role.PREMIUM)
-  // @UseGuards(JwtGuard, RolesGuard)
   @UseGuards(JwtGuard)
   @Post()
   create(@Body() feedPost: FeedPost, @Request() req): Observable<FeedPost> {
@@ -41,11 +41,18 @@ export class FeedController {
   @UseGuards(JwtGuard)
   @Get()
   findSelected(
-    @Query('take') take: number = 1,
-    @Query('skip') skip: number = 1,
+    @Query('take', new ParseIntPipe({ errorHttpStatusCode: 400 }))
+    take: number = 10,
+    @Query('skip', new ParseIntPipe({ errorHttpStatusCode: 400 }))
+    skip: number = 0,
   ): Observable<FeedPost[]> {
-    take = take > 20 ? 20 : take;
-    return this.feedService.findPosts(take, skip);
+    take = Math.min(take, 20);
+    return this.feedService.findPosts(take, skip).pipe(
+      catchError((error) => {
+        console.error('Error fetching posts', error);
+        return throwError(() => new Error('Failed to fetch posts'));
+      }),
+    );
   }
 
   @UseGuards(JwtGuard, IsCreatorGuard)

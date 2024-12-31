@@ -1,12 +1,15 @@
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
-
-const fs = require('fs');
-const FileType = require('file-type');
-
-import path = require('path');
 import { from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const FileType = require('file-type');
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import path = require('path');
 
 type validFileExtension = 'png' | 'jpg' | 'jpeg';
 type validMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
@@ -28,8 +31,8 @@ export const saveImageToStorage = {
     },
   }),
   fileFilter: (req, file, cb) => {
-    const allowedMimeTypes: validMimeType[] = validMimeTypes;
-    allowedMimeTypes.includes(file.mimetype) ? cb(null, true) : cb(null, false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    validMimeTypes.includes(file.mimetype) ? cb(null, true) : cb(null, false);
   },
 };
 
