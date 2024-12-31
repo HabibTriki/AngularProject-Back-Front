@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { FriendRequest_Status } from './friend-request.interface';
 
 import { UserEntity } from './user.entity';
+import { FriendRequestStatusEnum } from './friend-request.interface';
 
 @Entity('request')
 export class FriendRequestEntity {
@@ -18,5 +18,5 @@ export class FriendRequestEntity {
   receiver: UserEntity;
 
   @Column()
-  status: FriendRequest_Status;
+  status: FriendRequestStatusEnum;
 }

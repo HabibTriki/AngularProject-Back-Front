@@ -10,12 +10,13 @@ import {
   Param,
   Put,
   Body,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { join } from 'path';
 import { Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { UpdateResult } from 'typeorm';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { JwtGuard } from '../guards/jwt.guard';
 import {
   isFileExtensionSafe,
@@ -25,6 +26,7 @@ import {
 import {
   FriendRequest,
   FriendRequestStatus,
+  FriendRequestStatusEnum,
 } from '../models/friend-request.interface';
 import { User } from '../models/user.class';
 import { UserService } from '../services/user.service';
@@ -65,7 +67,7 @@ export class UserController {
 
   @UseGuards(JwtGuard)
   @Get('image')
-  findImage(@Request() req, @Res() res): Observable<Object> {
+  findImage(@Request() req, @Res() res): Observable<object> {
     const userId = req.user.id;
     return this.userService.findImageNameByUserId(userId).pipe(
       switchMap((imageName: string) => {
@@ -95,33 +97,46 @@ export class UserController {
   @UseGuards(JwtGuard)
   @Post('friend-request/send/:receiverId')
   sendFriendRequest(
-    @Param('receiverId') receiverStringId: string,
+    @Param('receiverId', ParseIntPipe) receiverId: number,
     @Request() req,
   ): Observable<FriendRequest | { error: string }> {
-    const receiverId = parseInt(receiverStringId);
-    return this.userService.sendFriendRequest(receiverId, req.user);
-  }
+    if (receiverId <= 0) {
+      throw new BadRequestException('Invalid receiver ID');
+    }
 
+    return this.userService.sendFriendRequest(receiverId, req.user).pipe(
+      catchError((err) => {
+        throw new BadRequestException(err.error || err.message);
+      }),
+    );
+  }
   @UseGuards(JwtGuard)
   @Get('friend-request/status/:receiverId')
   getFriendRequestStatus(
-    @Param('receiverId') receiverStringId: string,
+    @Param('receiverId', ParseIntPipe) receiverId: number,
     @Request() req,
   ): Observable<FriendRequestStatus> {
-    const receiverId = parseInt(receiverStringId);
     return this.userService.getFriendRequestStatus(receiverId, req.user);
   }
 
   @UseGuards(JwtGuard)
   @Put('friend-request/response/:friendRequestId')
   respondToFriendRequest(
-    @Param('friendRequestId') friendRequestStringId: string,
-    @Body() statusResponse: FriendRequestStatus,
+    @Param('friendRequestId', ParseIntPipe) friendRequestId: number,
+    @Body() statusResponse: { status: FriendRequestStatusEnum },
+    @Request() req,
   ): Observable<FriendRequestStatus> {
-    const friendRequestId = parseInt(friendRequestStringId);
+    if (
+      !Object.values(FriendRequestStatusEnum).includes(statusResponse.status)
+    ) {
+      throw new BadRequestException(
+        `Invalid status. Allowed values are: ${Object.values(FriendRequestStatusEnum).join(', ')}`,
+      );
+    }
     return this.userService.respondToFriendRequest(
       statusResponse.status,
       friendRequestId,
+      req.user.id,
     );
   }
 
