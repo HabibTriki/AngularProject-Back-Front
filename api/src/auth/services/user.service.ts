@@ -1,13 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { Repository, UpdateResult } from 'typeorm';
+import { from, mergeMap, Observable, of, throwError } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import { In, Repository, UpdateResult } from 'typeorm';
 import { FriendRequestEntity } from '../models/friend-request.entity';
 import {
   FriendRequest,
   FriendRequestStatus,
-  FriendRequest_Status,
+  FriendRequestStatusEnum,
 } from '../models/friend-request.interface';
 import { UserEntity } from '../models/user.entity';
 import { User } from '../models/user.class';
@@ -32,8 +38,8 @@ export class UserService {
         if (!user) {
           throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
-        delete user.password; // Delete password from user object
-        return user; // Return the user object without the password
+        delete user.password;
+        return user;
       }),
     );
   }
@@ -48,7 +54,7 @@ export class UserService {
   findImageNameByUserId(id: number): Observable<string> {
     return from(
       this.userRepository.findOne({
-        where: { id }, // The where clause to filter by id
+        where: { id },
       }),
     ).pipe(
       map((user: User) => {
@@ -59,49 +65,50 @@ export class UserService {
   }
 
   hasRequestBeenSentOrReceived(
-    creator: User,
-    receiver: User,
+    creator: UserEntity,
+    receiver: UserEntity,
   ): Observable<boolean> {
     return from(
       this.friendRequestRepository.findOne({
         where: [
-          { creator, receiver },
-          { creator: receiver, receiver: creator },
+          { creator: { id: creator.id }, receiver: { id: receiver.id } }, // Match using user ids
+          { creator: { id: receiver.id }, receiver: { id: creator.id } }, // Match in reverse direction
         ],
       }),
     ).pipe(
-      switchMap((friendRequest: FriendRequest) => {
-        if (!friendRequest) return of(false);
-        return of(true);
+      map((friendRequest: FriendRequestEntity | undefined) => {
+        return !!friendRequest;
       }),
     );
   }
 
   sendFriendRequest(
     receiverId: number,
-    creator: User,
-  ): Observable<FriendRequest | { error: string }> {
-    if (receiverId === creator.id)
+    creator: UserEntity,
+  ): Observable<FriendRequestEntity | { error: string }> {
+    if (receiverId === creator.id) {
       return of({ error: 'It is not possible to add yourself!' });
-
+    }
     return this.findUserById(receiverId).pipe(
-      switchMap((receiver: User) => {
+      mergeMap((receiver: UserEntity) => {
         return this.hasRequestBeenSentOrReceived(creator, receiver).pipe(
-          switchMap((hasRequestBeenSentOrReceived: boolean) => {
-            if (hasRequestBeenSentOrReceived)
+          mergeMap((hasRequestBeenSentOrReceived: boolean) => {
+            if (hasRequestBeenSentOrReceived) {
               return of({
                 error:
-                  'A friend request has already been sent of received to your account!',
+                  'A friend request has already been sent or received to your account!',
               });
-            const friendRequest: FriendRequest = {
-              creator,
-              receiver,
-              status: 'pending',
-            };
+            }
+            const friendRequest = new FriendRequestEntity();
+            friendRequest.creator = creator;
+            friendRequest.receiver = receiver;
+            friendRequest.status = FriendRequestStatusEnum.PENDING;
+
             return from(this.friendRequestRepository.save(friendRequest));
           }),
         );
       }),
+      catchError((err) => of({ error: err.message })), // Handle errors
     );
   }
 
@@ -110,25 +117,46 @@ export class UserService {
     currentUser: User,
   ): Observable<FriendRequestStatus> {
     return this.findUserById(receiverId).pipe(
-      switchMap((receiver: User) => {
+      mergeMap((receiver: User) => {
         return from(
           this.friendRequestRepository.findOne({
             where: [
-              { creator: currentUser, receiver: receiver },
-              { creator: receiver, receiver: currentUser },
+              {
+                creator: { id: currentUser.id },
+                receiver: { id: receiver.id },
+              },
+              {
+                creator: { id: receiver.id },
+                receiver: { id: currentUser.id },
+              },
             ],
             relations: ['creator', 'receiver'],
           }),
+        ).pipe(
+          map((friendRequest: FriendRequest | undefined) => {
+            if (!friendRequest) {
+              return { status: FriendRequestStatusEnum.NOT_SENT };
+            }
+            if (
+              friendRequest.creator.id === currentUser.id &&
+              friendRequest.status === FriendRequestStatusEnum.PENDING
+            ) {
+              return { status: FriendRequestStatusEnum.PENDING };
+            }
+            if (
+              friendRequest.receiver.id === currentUser.id &&
+              friendRequest.status === FriendRequestStatusEnum.PENDING
+            ) {
+              return {
+                status:
+                  FriendRequestStatusEnum.WAITING_FOR_CURRENT_USER_RESPONSE,
+              };
+            }
+            return { status: friendRequest.status };
+          }),
         );
       }),
-      switchMap((friendRequest: FriendRequest) => {
-        if (friendRequest?.receiver.id === currentUser.id) {
-          return of({
-            status: 'waiting-for-current-user-response' as FriendRequest_Status,
-          });
-        }
-        return of({ status: friendRequest?.status || 'not-sent' });
-      }),
+      catchError(() => of({ status: FriendRequestStatusEnum.NOT_SENT })),
     );
   }
 
@@ -136,22 +164,42 @@ export class UserService {
     return from(
       this.friendRequestRepository.findOne({
         where: [{ id: friendRequestId }],
+        relations: ['creator', 'receiver'],
       }),
     );
   }
 
   respondToFriendRequest(
-    statusResponse: FriendRequest_Status,
+    statusResponse: FriendRequestStatusEnum,
     friendRequestId: number,
+    currentUserId: number,
   ): Observable<FriendRequestStatus> {
+    if (!Object.values(FriendRequestStatusEnum).includes(statusResponse)) {
+      return throwError(() => new Error('Invalid status provided.'));
+    }
+
     return this.getFriendRequestUserById(friendRequestId).pipe(
-      switchMap((friendRequest: FriendRequest) => {
+      mergeMap((friendRequest: FriendRequestEntity | null) => {
+        if (!friendRequest) {
+          throw new NotFoundException('Friend request not found');
+        }
+        if (friendRequest.receiver.id !== currentUserId) {
+          throw new ForbiddenException(
+            'You are not allowed to modify this friend request.',
+          );
+        }
         return from(
           this.friendRequestRepository.save({
             ...friendRequest,
             status: statusResponse,
           }),
-        );
+        ).pipe(map(() => ({ status: statusResponse })));
+      }),
+      catchError((err) => {
+        if (err instanceof NotFoundException || ForbiddenException) {
+          throw err;
+        }
+        return of({ status: FriendRequestStatusEnum.NOT_SENT });
       }),
     );
   }
@@ -171,25 +219,28 @@ export class UserService {
     return from(
       this.friendRequestRepository.find({
         where: [
-          { creator: currentUser, status: 'accepted' },
-          { receiver: currentUser, status: 'accepted' },
+          { creator: currentUser, status: FriendRequestStatusEnum.ACCEPTED },
+          { receiver: currentUser, status: FriendRequestStatusEnum.ACCEPTED },
         ],
         relations: ['creator', 'receiver'],
       }),
     ).pipe(
-      switchMap((friends: FriendRequest[]) => {
-        const userIds: number[] = [];
-
-        friends.forEach((friend: FriendRequest) => {
-          if (friend.creator.id === currentUser.id) {
-            userIds.push(friend.receiver.id);
-          } else if (friend.receiver.id === currentUser.id) {
-            userIds.push(friend.creator.id);
-          }
-        });
-
-        return from(this.userRepository.findByIds(userIds));
+      map((friends: FriendRequest[]) => {
+        // Extract user IDs based on the current user
+        const userIds: number[] = friends.map((friend: FriendRequest) =>
+          friend.creator.id === currentUser.id
+            ? friend.receiver.id
+            : friend.creator.id,
+        );
+        return Array.from(new Set(userIds));
       }),
+      switchMap((uniqueUserIds: number[]) =>
+        from(
+          this.userRepository.find({
+            where: { id: In(uniqueUserIds) },
+          }),
+        ),
+      ),
     );
   }
 }
