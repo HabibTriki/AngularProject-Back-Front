@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
     "@capacitor/core": "^6.2.0",
-    "@capacitor/storage": "^1.2.5",
+    "@capacitor/preferences": "^6.0.3",
     "@ionic/angular": "^8.4.1",
     "ionicons": "^7.0.0",
     "jwt-decode": "^3.1.2",

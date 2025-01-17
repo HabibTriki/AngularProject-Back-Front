@@ -14,9 +14,7 @@ type BannerColors = {
   selector: 'app-profile-summary',
   templateUrl: './profile-summary.component.html',
   styleUrls: ['./profile-summary.component.scss'],
-  imports: [
-    IonicModule
-  ]
+  standalone: false,
 })
 export class ProfileSummaryComponent implements OnInit {
   bannerColors: BannerColors = {
