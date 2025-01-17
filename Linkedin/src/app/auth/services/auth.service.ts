@@ -1,11 +1,11 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Plugins } from '@capacitor/core';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
-import { map, switchMap, take, tap } from 'rxjs/operators';
-
+import { map, take, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
+
+import { Preferences } from '@capacitor/preferences';
 
 import { environment } from 'src/environments/environment';
 
@@ -17,7 +17,7 @@ import { UserResponse } from '../models/userResponse.model';
   providedIn: 'root',
 })
 export class AuthService {
-  private user$ = new BehaviorSubject<User>(null);
+  private user$ = new BehaviorSubject<User | null>(null);
 
   private httpOptions: { headers: HttpHeaders } = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
@@ -25,22 +25,20 @@ export class AuthService {
 
   get isUserLoggedIn(): Observable<boolean> {
     return this.user$.asObservable().pipe(
-      switchMap((user: User) => {
-        const isUserAuthenticated = user !== null;
-        return of(isUserAuthenticated);
-      })
+      map((user) => !!user)
     );
   }
 
   get userRole(): Observable<Role> {
     return this.user$.asObservable().pipe(
-      switchMap((user: User) => {
-        return of(user.role);
-      })
+      map((user) => user?.role ?? 'user')
     );
   }
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
   register(newUser: NewUser): Observable<User> {
     return this.http
@@ -61,11 +59,12 @@ export class AuthService {
       )
       .pipe(
         take(1),
-        tap((response: { token: string }) => {
-          Plugins.Storage.set({
+        tap((response) => {
+          Preferences.set({
             key: 'token',
             value: response.token,
           });
+
           const decodedToken: UserResponse = jwt_decode(response.token);
           this.user$.next(decodedToken.user);
         })
@@ -73,31 +72,31 @@ export class AuthService {
   }
 
   isTokenInStorage(): Observable<boolean> {
-    return from(
-      Plugins.Storage.get({
-        key: 'token',
-      })
-    ).pipe(
-      map((data: { value: string }) => {
-        if (!data || !data.value) return null;
-
+    return from(Preferences.get({ key: 'token' })).pipe(
+      map((data) => {
+        if (!data?.value) {
+          return false;
+        }
         const decodedToken: UserResponse = jwt_decode(data.value);
-        const jwtExpirationInMsSinceUnixEpoch = decodedToken.exp * 1000;
-        const isExpired =
-          new Date() > new Date(jwtExpirationInMsSinceUnixEpoch);
+        const jwtExpirationInMs = decodedToken.exp * 1000;
+        const isExpired = new Date() > new Date(jwtExpirationInMs);
 
-        if (isExpired) return null;
+        if (isExpired) {
+          return false;
+        }
+
         if (decodedToken.user) {
           this.user$.next(decodedToken.user);
           return true;
         }
+        return false;
       })
     );
   }
 
   logout(): void {
     this.user$.next(null);
-    Plugins.Storage.remove({ key: 'token' });
+    Preferences.remove({ key: 'token' });
     this.router.navigateByUrl('/auth');
   }
 }
