@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
+import { switchMap } from 'rxjs/operators';
 
 import { Preferences } from '@capacitor/preferences';
 
@@ -32,6 +33,17 @@ export class AuthService {
   get userRole(): Observable<Role> {
     return this.user$.asObservable().pipe(
       map((user) => user?.role ?? 'user')
+    );
+  }
+  get userId(): Observable<number> {
+    return this.user$.asObservable().pipe(
+      switchMap((user) => {
+        if (user) {
+          return of(user.id);
+        }
+        // Handle the case where `user` is null
+        return of(-1); // You can return a default value or handle it differently
+      })
     );
   }
 
