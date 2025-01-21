@@ -1,64 +1,70 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { NewUser } from './models/newUser.model';
+
 import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    IonicModule,
-    FormsModule
-  ]
+  standalone: false
 })
 export class AuthPage implements OnInit {
   @ViewChild('form') form!: NgForm;
 
   submissionType: 'login' | 'join' = 'login';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  ngOnInit(): void {}
+  ngOnInit() {}
 
   onSubmit(): void {
-    const { email, password } = this.form.value;
+    if (!this.form.valid) {
+      console.error('Form is invalid!');
+      return;
+    }
+
+    const { email, password, firstName, lastName } = this.form.value;
+
     if (!email || !password) {
-      return; 
+      console.error('Email and password are required!');
+      return;
     }
 
     if (this.submissionType === 'login') {
-      console.log(1, 'handle login', email, password);
-
-      this.authService.login(email, password).subscribe(() => {
-        this.router.navigateByUrl('/home');
+      this.authService.login(email, password).subscribe({
+        next: () => {
+          console.log('Login successful!');
+          this.router.navigateByUrl('/home');
+        },
+        error: (err) => {
+          console.error('Login failed:', err);
+        },
       });
-
     } else if (this.submissionType === 'join') {
-      const { firstName, lastName } = this.form.value;
       if (!firstName || !lastName) {
+        console.error('First name and last name are required for registration!');
         return;
       }
-      console.log(2, 'handle join', email, password, firstName, lastName);
 
       const newUser: NewUser = { firstName, lastName, email, password };
 
-      this.authService.register(newUser).subscribe(() => {
-        this.toggleText();
+      this.authService.register(newUser).subscribe({
+        next: () => {
+          console.log('Registration successful!');
+          this.toggleText();
+        },
+        error: (err) => {
+          console.error('Registration failed:', err);
+        },
       });
     }
   }
 
-  toggleText(): void {
+
+  toggleText() {
     if (this.submissionType === 'login') {
       this.submissionType = 'join';
     } else if (this.submissionType === 'join') {
