@@ -3,7 +3,7 @@
     <ion-text color="primary" class="linkedin-text">Linked</ion-text>
     <ion-icon
       class="linkedin-icon"
-      name ="logo-linkedin"
+      name="logo-linkedin"
       color="primary"
     ></ion-icon>
   </div>
@@ -91,7 +91,7 @@
   </form>
   <div class="toggle-text">
     {{ submissionType === 'login' ? 'New to LinkedIn' : 'Already on LinkedIn' }}
-    <ion-text (click)="toggleText()" color="primary">
+    <ion-text class="toggle-auth-mode" (click)="toggleText()" color="primary">
       {{ submissionType === 'login' ? 'Join now' : 'Sign in' }}
     </ion-text>
   </div>
