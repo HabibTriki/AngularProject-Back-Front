@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { take } from 'rxjs/operators';
-
-import { Role } from 'src/app/auth/models/user.model';
 import { AuthService } from 'src/app/auth/services/auth.service';
-import {IonicModule} from "@ionic/angular";
+import { Role } from 'src/app/auth/models/user.model';
 
 type BannerColors = {
   colorOne: string;
   colorTwo: string;
   colorThree: string;
 };
+
 @Component({
   selector: 'app-profile-summary',
   templateUrl: './profile-summary.component.html',
@@ -23,13 +22,37 @@ export class ProfileSummaryComponent implements OnInit {
     colorThree: '#bfd3d6',
   };
 
+  userFullImagePath: string = ''; // Initialize with an empty string
+  fullName: string = ''; // Initialize with an empty string
+
   constructor(private authService: AuthService) {}
 
   ngOnInit() {
+    // Set banner colors based on user role
     this.authService.userRole.pipe(take(1)).subscribe((role: Role) => {
       this.bannerColors = this.getBannerColors(role);
     });
+
+    // Fetch and set the user's full name
+    this.authService.userFullName.pipe(take(1)).subscribe((name: string) => {
+      this.fullName = name;
+    });
+
+    // Fetch and set the user's profile image path
+    this.authService.userFullImagePath.subscribe((imagePath: string) => {
+      this.userFullImagePath = imagePath;
+    });
   }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input?.files && input.files.length > 0) {
+      const file = input.files[0];
+      console.log('File selected:', file);
+      // Logic to upload and handle the file can go here
+    }
+  }
+
   private getBannerColors(role: Role): BannerColors {
     switch (role) {
       case 'admin':
@@ -44,10 +67,8 @@ export class ProfileSummaryComponent implements OnInit {
           colorTwo: '#c09999',
           colorThree: '#ddadaf',
         };
-
       default:
         return this.bannerColors;
     }
   }
 }
-

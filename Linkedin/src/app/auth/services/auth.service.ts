@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import {BehaviorSubject, filter, from, Observable, of} from 'rxjs';
 import { map, take, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
 import { switchMap } from 'rxjs/operators';
@@ -23,6 +23,10 @@ export class AuthService {
   private httpOptions: { headers: HttpHeaders } = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
   };
+
+  get userStream(): Observable<User> {
+    return this.user$.asObservable().pipe(filter((user): user is User => user !== null));
+  }
 
   get isUserLoggedIn(): Observable<boolean> {
     return this.user$.asObservable().pipe(
@@ -47,10 +51,86 @@ export class AuthService {
     );
   }
 
+  get userFullName(): Observable<string> {
+    return this.user$.asObservable().pipe(
+      filter((user): user is User => user !== null), // Filter out null values
+      switchMap((user: User) => {
+        const fullName = `${user.firstName} ${user.lastName}`;
+        return of(fullName);
+      })
+    );
+  }
+
+  get userFullImagePath(): Observable<string> {
+    return this.user$.asObservable().pipe(
+      filter((user): user is User => user !== null), // Ensure user is not null
+      switchMap((user: User) => {
+        const doesAuthorHaveImage = !!user.imagePath;
+        console.log(888, doesAuthorHaveImage, user);
+
+        let fullImagePath = this.getDefaultFullImagePath();
+        if (doesAuthorHaveImage) {
+          fullImagePath = this.getFullImagePath(user.imagePath!); // Use non-null assertion
+        }
+        return of(fullImagePath);
+      })
+    );
+  }
+
+
   constructor(
     private http: HttpClient,
     private router: Router
   ) {}
+
+  getDefaultFullImagePath(): string {
+    return 'http://localhost:3000/api/feed/image/blank-profile-picture.png';
+  }
+  getFullImagePath(imageName: string): string {
+    return 'http://localhost:3000/api/feed/image/' + imageName;
+  }
+  getUserImage() {
+    return this.http.get(`${environment.baseApiUrl}/user/image`).pipe(take(1));
+  }
+  getUserImageName(): Observable<{ imageName: string }> {
+    return this.http
+      .get<{ imageName: string }>(`${environment.baseApiUrl}/user/image-name`)
+      .pipe(take(1));
+  }
+  updateUserImagePath(imagePath: string): Observable<User> {
+    return this.user$.pipe(
+      take(1),
+      map((user) => {
+        if (!user) {
+          throw new Error('User is null and cannot be updated.');
+        }
+        user.imagePath = imagePath;
+        this.user$.next(user); // Update the BehaviorSubject with the modified user
+        return user;
+      })
+    );
+  }
+
+  uploadUserImage(
+    formData: FormData
+  ): Observable<{ modifiedFileName: string }> {
+    return this.http
+      .post<{ modifiedFileName: string }>(
+        `${environment.baseApiUrl}/user/upload`,
+        formData
+      )
+      .pipe(
+        tap(({ modifiedFileName }) => {
+          const user = this.user$.value;
+          if (!user) {
+            throw new Error('User is null and cannot be updated.');
+          }
+          user.imagePath = modifiedFileName;
+          this.user$.next(user);
+        })
+      );
+  }
+
 
   register(newUser: NewUser): Observable<User> {
     return this.http
