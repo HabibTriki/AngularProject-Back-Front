@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { BehaviorSubject, from, of, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/services/auth.service';
-import { Role } from 'src/app/auth/models/user.model';
 
-type BannerColors = {
-  colorOne: string;
-  colorTwo: string;
-  colorThree: string;
-};
+import { Role } from 'src/app/auth/models/user.model';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { BannerColorService } from '../../services/banner-color.service';
+
+type validFileExtension = 'png' | 'jpg' | 'jpeg';
+type validMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
 
 @Component({
   selector: 'app-profile-summary',
@@ -15,60 +16,79 @@ type BannerColors = {
   styleUrls: ['./profile-summary.component.scss'],
   standalone: false,
 })
-export class ProfileSummaryComponent implements OnInit {
-  bannerColors: BannerColors = {
-    colorOne: '#a0b4b7',
-    colorTwo: '#dbe7e9',
-    colorThree: '#bfd3d6',
-  };
+export class ProfileSummaryComponent implements OnInit, OnDestroy {
+  form!: FormGroup;
 
-  userFullImagePath: string = ''; // Initialize with an empty string
-  fullName: string = ''; // Initialize with an empty string
+  validFileExtensions: validFileExtension[] = ['png', 'jpg', 'jpeg'];
+  validMimeTypes: validMimeType[] = ['image/png', 'image/jpg', 'image/jpeg'];
 
-  constructor(private authService: AuthService) {}
+  userFullImagePath!: string;
+  private userImagePathSubscription!: Subscription;
+
+  fullName$ = new BehaviorSubject<string>('');
+  fullName = '';
+
+  constructor(
+    private authService: AuthService,
+    public bannerColorService: BannerColorService
+  ) {}
 
   ngOnInit() {
-    // Set banner colors based on user role
+    this.form = new FormGroup({
+      file: new FormControl(null),
+    });
+
     this.authService.userRole.pipe(take(1)).subscribe((role: Role) => {
-      this.bannerColors = this.getBannerColors(role);
+      this.bannerColorService.bannerColors =
+        this.bannerColorService.getBannerColors(role);
     });
 
-    // Fetch and set the user's full name
-    this.authService.userFullName.pipe(take(1)).subscribe((name: string) => {
-      this.fullName = name;
-    });
+    this.authService.userFullName
+      .pipe(take(1))
+      .subscribe((fullName: string) => {
+        this.fullName = fullName;
+        this.fullName$.next(fullName);
+      });
 
-    // Fetch and set the user's profile image path
-    this.authService.userFullImagePath.subscribe((imagePath: string) => {
-      this.userFullImagePath = imagePath;
-    });
+    this.userImagePathSubscription =
+      this.authService.userFullImagePath.subscribe((fullImagePath: string) => {
+        this.userFullImagePath = fullImagePath;
+      });
   }
 
   onFileSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input?.files && input.files.length > 0) {
-      const file = input.files[0];
-      console.log('File selected:', file);
-      // Logic to upload and handle the file can go here
+    const file: File | undefined = (event.target as HTMLInputElement)?.files?.[0];
+    if (!file) return;
+
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    const mimeType = file.type;
+
+    // Validate the file extension and MIME type
+    const isFileExtensionValid = this.validFileExtensions.includes(fileExtension as validFileExtension);
+    const isMimeTypeValid = this.validMimeTypes.includes(mimeType as validMimeType);
+
+    if (!isFileExtensionValid || !isMimeTypeValid) {
+      console.log({ error: 'File format not supported!' });
+      return;
     }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Proceed with uploading the file
+    this.authService.uploadUserImage(formData).subscribe({
+      next: (response) => {
+        console.log('File uploaded successfully:', response);
+      },
+      error: (err) => {
+        console.log('Error uploading file:', err);
+      },
+    });
+
+    this.form.reset();
   }
 
-  private getBannerColors(role: Role): BannerColors {
-    switch (role) {
-      case 'admin':
-        return {
-          colorOne: '#daa520',
-          colorTwo: '#f0e68c',
-          colorThree: '#fafad2',
-        };
-      case 'premium':
-        return {
-          colorOne: '#bc8f8f',
-          colorTwo: '#c09999',
-          colorThree: '#ddadaf',
-        };
-      default:
-        return this.bannerColors;
-    }
+  ngOnDestroy() {
+    this.userImagePathSubscription.unsubscribe();
   }
 }
