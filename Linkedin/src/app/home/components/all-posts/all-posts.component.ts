@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { IonInfiniteScroll, ModalController } from '@ionic/angular';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -43,6 +43,20 @@ export class AllPostsComponent implements OnInit, OnDestroy {
     this.getPosts(false, '');
     this.authService.userId.pipe(take(1)).subscribe((userId: number) => {
       this.userId$.next(userId);
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    const postBody = changes['postBody'].currentValue;
+    if (!postBody) return;
+
+    this.postService.createPost(postBody).subscribe((post: Post) => {
+      this.authService.userFullImagePath
+        .pipe(take(1))
+        .subscribe((fullImagePath: string) => {
+          post['fullImagePath'] = fullImagePath;
+          this.allLoadedPosts.unshift(post);
+        });
     });
   }
 
