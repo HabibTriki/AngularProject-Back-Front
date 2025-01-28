@@ -23,7 +23,7 @@ export class ConnectionProfileComponent implements OnInit, OnDestroy {
   constructor(
     public bannerColorService: BannerColorService,
     private route: ActivatedRoute,
-    private connectionProfileService: ConnectionProfileService
+    public connectionProfileService: ConnectionProfileService
   ) {}
   ngOnInit() {
     this.friendRequestStatusSubscription$ = this.getFriendRequestStatus()

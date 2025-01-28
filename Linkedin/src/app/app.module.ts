@@ -11,7 +11,7 @@ import { HttpClientModule , HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptorService } from './auth/services/auth-interceptor.service';
 
 @NgModule({
-  declarations: [AppComponent,PopoverComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
