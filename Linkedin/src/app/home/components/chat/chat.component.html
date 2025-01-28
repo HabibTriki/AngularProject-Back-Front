@@ -18,7 +18,9 @@
     </div>
     <div
       *ngFor="let friend of friends; let i = index"
+      (click)="openConversation(friend, i)"
       class="friend"
+      [ngClass]="{ 'selected-conversation': selectedConversationIndex === i }"
     >
       <ion-grid>
         <ion-row class="ion-align-items-center ion-justify-content-center">
@@ -54,8 +56,8 @@
     <div class="top-panel">
       <div class="friend-name-role">
         <ion-text style="font-weight: 500" color="dark"
-        > "firstName"
-          "lastName"</ion-text
+        >{{ friend?.firstName || "Loading..." }}
+          {{ friend?.lastName }}</ion-text
         >
         <ion-text>Full Stack Developer</ion-text>
       </div>
@@ -76,19 +78,21 @@
     <ion-grid class="chat-messages">
       <ion-row
         *ngFor="let message of messages"
-        class="ion-align-items-center"
+        class="ion-align-items-center ion-justify-content-center"
       >
         <ion-col size="auto">
           <ion-avatar>
-            <ion-img
-              *ngIf="userFullImagePath"
-              [src]="userFullImagePath">
-
-            </ion-img>
+            <ion-img *ngIf="message.user" [src]="deriveFullImagePath(message.user)"></ion-img>
           </ion-avatar>
         </ion-col>
         <ion-col>
-          <p>{{ message }}</p>
+          <p>
+            <span style="font-weight: 500"
+            >{{ message.user?.firstName }} {{ message.user?.lastName }}</span
+            >
+            - {{ message.createdAt | date: "short" }}
+          </p>
+          <p>{{ message.message }}</p>
         </ion-col>
       </ion-row>
     </ion-grid>
