@@ -14,7 +14,6 @@ export class PostService {
       .pipe(
         take(1),
         tap(({ imageName }) => {
-          console.log(33, imageName);
           const defaultImagePath = 'blank-profile-picture.png';
           this.authService
             .updateUserImagePath(imageName || defaultImagePath)

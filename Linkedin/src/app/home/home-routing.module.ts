@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import {ConnectionProfileComponent} from "./components/connection-profile/connection-profile.component";
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { HomePage } from './home.page';
+import {ChatComponent} from "./components/chat/chat.component";
 
 const routes: Routes = [
   {
@@ -13,6 +14,10 @@ const routes: Routes = [
       {
         path: ':id',
         component: ConnectionProfileComponent,
+      },
+      {
+        path: 'chat/connections',
+        component: ChatComponent,
       },
     ],
   },

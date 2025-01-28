@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { PopoverController } from '@ionic/angular';
 import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
@@ -15,7 +16,9 @@ export class PopoverComponent implements OnInit, OnDestroy {
   fullName$ = new BehaviorSubject<string>(''); // BehaviorSubject initialized with an empty string
   fullName: string = ''; // Initialized with an empty string
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,
+              private popoverController: PopoverController
+  ) {}
 
   ngOnInit() {
     // Subscribe to userFullImagePath
@@ -32,7 +35,8 @@ export class PopoverComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSignOut() {
+  async onSignOut() {
+    await this.popoverController.dismiss();
     this.authService.logout();
   }
 

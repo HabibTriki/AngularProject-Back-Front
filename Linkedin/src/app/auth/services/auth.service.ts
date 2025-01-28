@@ -55,6 +55,9 @@ export class AuthService {
     return this.user$.asObservable().pipe(
       filter((user): user is User => user !== null), // Filter out null values
       switchMap((user: User) => {
+        if (!user){
+          return of('Guest User');
+        }
         const fullName = `${user.firstName} ${user.lastName}`;
         return of(fullName);
       })
