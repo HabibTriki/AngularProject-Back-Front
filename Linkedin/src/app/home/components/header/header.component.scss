@@ -1,40 +1,65 @@
 .toolbar-wrapper {
-    display: flex;
-    max-width: 1128px;
-    margin: auto;
-  }
-  
-  .linkedin-logo {
-    font-size: 40px;
-  }
-  
-  ion-col div,
-  ion-badge {
-    font-size: 12px;
-    font-weight: 400;
-  }
-  
-  ion-searchbar {
-    --box-shadow: none;
-    transform: scale(0.8);
-    margin-left: -40px;
-  }
-  
-  ion-icon {
-    font-size: 24px;
-  }
-  
-  ion-avatar {
-    width: 24px;
-    height: 24px;
-    margin: auto;
-  }
-  
-  ion-col {
-    width: 80px !important;
-    text-align: center;
-  }
-  
-  ion-header {
-    border-bottom: 1px solid var(--ion-color-light-tint);
-  }
+  display: flex;
+  max-width: 1128px;
+  margin: auto;
+  background-color: #6a0dad; /* Purple Background */
+}
+
+ion-toolbar {
+  --background: #6a0dad;
+  --color: white;
+  border-bottom: 1px solid #d1c4e9; /* Light Purple Border */
+}
+
+ion-buttons ion-button img {
+  filter: brightness(0) invert(1); /* Ensure logo appears white */
+}
+
+ion-searchbar {
+  --box-shadow: none;
+  --background: #f3e5f5; /* Light Purple */
+  color: #4b0082; /* Indigo */
+  transform: scale(0.9);
+}
+
+ion-col {
+  text-align: center;
+  color: white;
+}
+
+ion-col div {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+ion-icon {
+  font-size: 24px;
+  color: white;
+}
+
+ion-badge {
+  font-size: 12px;
+  font-weight: bold;
+  background: #ff4081; /* Pinkish Badge */
+  color: white;
+}
+
+ion-avatar {
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.popover-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.popover-menu ion-icon {
+  font-size: 16px;
+  margin-left: 4px;
+}

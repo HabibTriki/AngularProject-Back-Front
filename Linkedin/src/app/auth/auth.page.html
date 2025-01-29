@@ -1,14 +1,14 @@
 <ion-content>
   <div class="title-container">
-    <ion-text color="primary" class="linkedin-text">Linked</ion-text>
-    <ion-icon
-      class="linkedin-icon"
-      name="logo-linkedin"
-      color="primary"
-    ></ion-icon>
+    <img
+      class="Carrieri-icon"
+      width="10%"
+      height="10%"
+      src="../../assets/icon/favicon.png"
+      alt="Custom Icon"
+    />
   </div>
   <div class="subtitle-container">Make the most of your professional life</div>
-
   <form #form="ngForm" (ngSubmit)="onSubmit()">
     <ion-card>
       <ng-container *ngIf="submissionType === 'join'">
@@ -74,7 +74,7 @@
       >Please enter your password.</ion-text
       >
       <p *ngIf="submissionType === 'join'" class="terms-and-conditions">
-        By clicking Agree & Join, you agree to the LinkedIn
+        By clicking Agree & Join, you agree to the Carrieri
         <ion-text color="primary">User Agreement</ion-text>,
         <ion-text color="primary">Privacy Policy</ion-text>, and
         <ion-text color="primary">Cookie Policy</ion-text>.
@@ -90,7 +90,7 @@
     </ion-card>
   </form>
   <div class="toggle-text">
-    {{ submissionType === 'login' ? 'New to LinkedIn' : 'Already on LinkedIn' }}
+    {{ submissionType === 'login' ? 'New to Carrieri' : 'Already on Carrieri' }}
     <ion-text class="toggle-auth-mode" (click)="toggleText()" color="primary">
       {{ submissionType === 'login' ? 'Join now' : 'Sign in' }}
     </ion-text>

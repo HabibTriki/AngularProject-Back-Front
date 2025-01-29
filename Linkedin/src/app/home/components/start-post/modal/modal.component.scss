@@ -3,10 +3,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  ion-button {
-    padding: 0;
-  }
 }
+
+ion-button {
+  padding: 0;
+}
+
 ion-grid ion-button {
   --border-width: 1px;
   height: 30px;
@@ -18,8 +20,17 @@ ion-grid ion-button {
     margin: 0 6px;
   }
 }
+
 .action-items {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+ion-button {
+  --border-radius: 15px;
+}
+
+ion-button:disabled {
+  opacity: 0.5;
 }

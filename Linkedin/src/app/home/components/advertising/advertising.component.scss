@@ -2,32 +2,58 @@ ion-card {
   width: 315px;
   box-shadow: none;
   border: 1px solid #e1e1e1;
+  border-radius: 12px; /* Rounded corners */
+  background-color: #f9f9f9; /* Light background for the card */
 }
+
 ion-card-header {
   padding-bottom: 8px;
+  border-bottom: 1px solid #e1e1e1; /* Add a subtle border */
+
   ion-text {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+
+    h5 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 0;
+      color: #4b0082; /* Indigo (a shade of purple) for the heading */
+    }
+
     ion-icon {
-      background-color: var(--ion-color-medium-shade);
-      color: var(--ion-color-dark-contrast);
+      background-color: #800080; /* Deep purple background for the icon */
+      color: #fff; /* White icon color */
       border-radius: 4px;
+      padding: 4px; /* Add padding for better appearance */
     }
   }
-  h5 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 0;
-  }
 }
+
 ion-card-content {
   ion-text h6:not(.first-course) {
     margin-top: 8px;
   }
+
   h6 {
     font-weight: 500;
+    color: #4b0082; /* Indigo for course titles */
   }
+
   p {
     margin-left: 16px;
+    color: #555; /* Dark gray for author names */
+  }
+
+  ion-button {
+    --color: #800080; /* Deep purple for the button text */
+    --background-hover: #4b0082; /* Darker purple on hover */
+    --ripple-color: #4b0082; /* Ripple effect color */
+    margin-top: 16px;
+
+    ion-icon {
+      color: #800080; /* Deep purple for the arrow icon */
+    }
   }
 }

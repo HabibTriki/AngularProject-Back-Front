@@ -1,6 +1,7 @@
 <div>
   <div class="heading ion-padding">
-    <ion-text>{{ postId ? "Edit" : "Create" }} a post</ion-text>    <ion-button
+    <ion-text>{{ postId ? "Edit" : "Create" }} a post</ion-text>
+    <ion-button
       (click)="onDismiss()"
       size="small"
       color="dark"
@@ -15,10 +16,7 @@
     <ion-row class="ion-justify-content-start">
       <ion-col size="auto">
         <ion-avatar>
-          <ion-img
-            *ngIf="userFullImagePath"
-            [src]="userFullImagePath"
-          ></ion-img>
+          <ion-img *ngIf="userFullImagePath" [src]="userFullImagePath"></ion-img>
         </ion-avatar>
       </ion-col>
       <ion-col>
@@ -83,8 +81,8 @@
         </ion-button>
       </div>
       <ion-button [disabled]="!form.valid" type="submit" class="ion-margin">{{
-          postId ? "Edit" : "Post"
-        }}</ion-button>
+        postId ? "Edit" : "Post"
+      }}</ion-button>
     </div>
   </form>
 </div>
