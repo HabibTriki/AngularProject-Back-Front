@@ -103,7 +103,7 @@ export class ChatComponent {
 
     this.friendSubscription = this.friend$.subscribe((friend: any) => {
       if (JSON.stringify(friend) !== '{}') {
-        this.chatService.joinConversation(this.friend.id);
+        this.chatService.joinConversation(this.friend?.id);
       }
     });
 
@@ -128,7 +128,7 @@ export class ChatComponent {
     const { message } = this.form.value;
     if (!message) return;
 
-    let conversationUserIds = [this.userId, this.friend.id].sort();
+    let conversationUserIds = [this.userId, this.friend?.id].sort();
 
     this.conversations.forEach((conversation: Conversation) => {
       let userIds = conversation.users?.map((user: User) => user.id).sort();
