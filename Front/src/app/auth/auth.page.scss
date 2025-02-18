@@ -1,0 +1,85 @@
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+
+  .linkedin-text {
+    font-size: 36px;
+    font-weight: 700;
+    color: #800080; // Deep purple for the text
+  }
+
+  .linkedin-icon {
+    width: 44px; // Adjust size as needed
+    height: 44px; // Adjust size as needed
+    margin-left: 8px; // Add some spacing between text and icon
+  }
+}
+
+.subtitle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px 16px; // Fixed margin syntax
+  font-size: 30px;
+  text-align: center;
+  color: #4b0082; // Indigo (a shade of purple) for the subtitle
+}
+
+form {
+  max-width: 400px;
+  margin: auto;
+
+  ion-card {
+    box-shadow: none;
+    border: 1px solid #e1e1e1;
+    padding: 24px;
+
+    .terms-and-conditions {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 16px;
+      color: #555; // Dark gray for better readability
+
+      ion-text {
+        font-weight: 500;
+        color: #800080; // Deep purple for links
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    ion-button {
+      margin-top: 16px;
+      height: 48px;
+      --background: #800080; // Deep purple background for the button
+      --background-hover: #4b0082; // Darker purple on hover
+      --color: #fff; // White text for contrast
+      --border-radius: 24px; // Rounded corners
+      font-weight: 500;
+    }
+  }
+}
+
+.toggle-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  color: #555; // Dark gray for better readability
+
+  ion-text {
+    font-weight: 500;
+    color: #800080; // Deep purple for the toggle link
+    cursor: pointer;
+    margin-left: 8px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

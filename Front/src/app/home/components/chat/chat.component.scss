@@ -1,0 +1,128 @@
+.container {
+  display: flex;
+  height: calc(100% - 110px);
+  width: 800px;
+  box-shadow: none;
+  border: 1px solid #e1e1e1;
+  margin: auto;
+  margin-top: 110px;
+  border-radius: 12px; /* Rounded corners */
+  background-color: #fff; /* White background for the card */
+
+  @media (max-width: 800px) {
+    width: 100%;
+  }
+
+  .select-connection {
+    overflow-y: scroll;
+    width: 40%;
+    border-right: 1px solid #e1e1e1;
+
+    .friend {
+      border-bottom: 1px solid #e1e1e1;
+      border-left: 4px solid transparent;
+      padding: 12px;
+
+      &:hover {
+        background-color: #f3f2ef; /* Light gray on hover */
+        cursor: pointer;
+      }
+    }
+
+    .selected-conversation {
+      border-left: 4px solid #800080; /* Deep purple for selected conversation */
+    }
+  }
+
+  .chat {
+    width: 60%;
+    position: relative;
+
+    .chat-messages {
+      overflow-y: scroll;
+      height: calc(100% - 260px);
+      border-bottom: 1px solid #e1e1e1;
+      padding: 16px;
+
+      ion-row {
+        margin-bottom: 16px;
+
+        ion-avatar {
+          width: 40px;
+          height: 40px;
+          border: 2px solid #800080; /* Deep purple border for the avatar */
+        }
+
+        p {
+          margin: 0;
+          color: #333; /* Dark gray for message text */
+
+          span {
+            font-weight: 500;
+            color: #4b0082; /* Indigo for user names */
+          }
+        }
+      }
+    }
+
+    form {
+      width: 100%;
+      height: 200px;
+      position: absolute;
+      bottom: 0;
+      padding: 16px;
+      background-color: #f9f9f9; /* Light background for the form */
+
+      ion-textarea {
+        height: 110px;
+        border-radius: 8px;
+        border: 1px solid #e1e1e1;
+        padding: 8px;
+      }
+
+      ion-button {
+        --color: #800080; /* Deep purple for the button text */
+        --background-hover: #4b0082; /* Darker purple on hover */
+        --ripple-color: #4b0082; /* Ripple effect color */
+
+        ion-icon {
+          color: #800080; /* Deep purple for the icons */
+        }
+      }
+    }
+  }
+}
+
+.top-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e1e1e1;
+  padding: 12px;
+
+  .heading {
+    font-size: 18px;
+    font-weight: 500;
+    color: #4b0082; /* Indigo for the heading */
+  }
+
+  .friend-name-role {
+    display: flex;
+    flex-direction: column;
+
+    ion-text {
+      color: #4b0082; /* Indigo for the friend name */
+      font-weight: 500;
+
+      &:last-child {
+        color: #555; /* Dark gray for the role */
+        font-size: 14px;
+      }
+    }
+  }
+
+  ion-button {
+    --color: #800080; /* Deep purple for the button icons */
+    --background-hover: #4b0082; /* Darker purple on hover */
+  }
+}

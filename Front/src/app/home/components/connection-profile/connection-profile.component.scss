@@ -1,0 +1,89 @@
+ion-card {
+  margin: 110px auto 0;
+  width: 782px;
+  box-shadow: none;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px; /* Rounded corners */
+  background-color: #fff; /* White background for the card */
+
+  @media (max-width: 960px) {
+    width: auto;
+    margin: 20px;
+  }
+}
+
+.backdrop {
+  height: 196px;
+  display: flex;
+  background-color: #f3f2ef; /* Light background for the backdrop */
+
+  .background-one {
+    width: 70%;
+    height: 100%;
+    background-color: #800080; /* Deep purple for the first background */
+  }
+
+  .half-ellipse {
+    border-radius: 0 100% 100% 0 / 50%;
+    width: 2%;
+    height: 100%;
+    background-color: #800080; /* Deep purple for the half-ellipse */
+  }
+
+  .background-two {
+    width: 5%;
+    height: 100%;
+    background-color: #4b0082; /* Indigo for the second background */
+  }
+
+  .background-three {
+    width: 25%;
+    height: 100%;
+    background-color: #4b0082; /* Indigo for the third background */
+  }
+}
+
+ion-card-header {
+  margin-top: -112px;
+  text-align: center;
+
+  ion-avatar {
+    width: 152px;
+    height: 152px;
+    border: 4px solid #fff; /* White border for the avatar */
+    box-shadow: 0 0 0 4px #800080; /* Deep purple shadow for the avatar */
+  }
+
+  ion-card-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #4b0082; /* Indigo for the name */
+    margin-top: 16px;
+  }
+
+  ion-card-subtitle {
+    font-size: 16px;
+    color: #555; /* Dark gray for the subtitle */
+  }
+}
+
+ion-card-content {
+  padding: 16px;
+  text-align: center;
+
+  ion-button {
+    --color: #800080; /* Deep purple for the button text */
+    --background-hover: #4b0082; /* Darker purple on hover */
+    --ripple-color: #4b0082; /* Ripple effect color */
+    margin: 8px;
+
+    ion-icon {
+      color: #800080; /* Deep purple for the icons */
+    }
+  }
+
+  ion-button[fill="outline"] {
+    --border-color: #800080; /* Deep purple border for outline buttons */
+    --color: #800080; /* Deep purple text for outline buttons */
+  }
+}
